@@ -2,6 +2,6 @@
   <application>redditongae</application>
   <version>v0-1</version>
   <static-files>
-    <include path="/**.css" expiration="5d" />
+    <include path="/css/main.css" expiration="5d" />
   </static-files>
 </appengine-web-app>

@@ -34,8 +34,12 @@
       [:li
        (link-to url title)
        [:span (format " Posted %s ago. %d %s " (pprint date) points "points")]
-       (link-to (str "/up/" url)   "Up")
-       (link-to (str "/down/" url) "Down")])))
+       (form-to [:post "/up/"]
+                [:input {:type "hidden" :name "url" :value url}]
+                (submit-button "Up"))
+       (form-to [:post "/down/"]
+                [:input {:type "hidden" :name "url" :value url}]
+                (submit-button "Down"))])))
 
 (defn top-bar []
   (let [ui (users/user-info)]
@@ -79,7 +83,6 @@
       (not (try (java.net.URL. url) (catch Exception e nil)))))
 
 (defn add-link [title url]
-  (println "title:" title "url:" url)
   (redirect
    (cond
     (invalid-url? url) "/new/?msg=Invalid URL"
@@ -91,6 +94,7 @@
      "/"))))
 
 (defn rate [url mfn]
+  (println "Rating " url)
   (dosync
    (when (@data url)
      (alter data update-in [url :points] mfn)))
@@ -101,9 +105,9 @@
   (GET  "/new/*" {{msg :msg} :params} (reddit-new-link msg)))
 
 (defroutes loggedin-routes
-  (POST "/new/" {{title "title" url "url"} :params} (add-link title url))
-  (GET  "/up/:url" [url] (rate url inc))
-  (GET  "/down/:url" [url] (rate url dec)))
+  (POST "/new/" [url title] (add-link title url))
+  (POST "/up/" [url] (rate url inc))
+  (POST "/down/" [url] (rate url dec)))
 
 (defn wrap-requiring-loggedin [application]
   (fn [request]
@@ -118,7 +122,23 @@
 
 (defroutes reddit
   public-routes
-  (ANY "/*" []  loggedin-routes)
+  (POST "/*" []  loggedin-routes)
   (route/not-found "Page not found"))
+
+(defn- log [msg & vals]
+  (let [line (apply format msg vals)]
+    (locking System/out (println line))))
+
+(defn wrap-request-logging [handler]
+  (fn [{:keys [request-method uri] :as req}]
+    (let [start  (System/currentTimeMillis)
+          resp   (handler req)
+          finish (System/currentTimeMillis)
+          total  (- finish start)]
+      (log "request %s %s (%dms)" request-method uri total)
+      resp)))
+
+(wrap! reddit
+       wrap-request-logging)
 
 (defservice reddit)
