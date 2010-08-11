@@ -1,6 +1,6 @@
 (defproject reddit-gae "0.1.0-SNAPSHOT"
   :description "Reddit clone in Clojure to be run on GAE"
-  :namespace [redditongae.core]
+  :namespaces [redditongae.core]
   :dependencies [[org.clojure/clojure "1.2.0-RC2"]
                  [org.clojure/clojure-contrib "1.2.0-RC2"]
                  [compojure "0.4.1"]
