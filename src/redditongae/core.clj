@@ -13,7 +13,7 @@
            (org.joda.time DateTime Duration Period)))
 
 ;; TODO replace it with data store use
-(def data  (ref {"http://codemeself.blogspot.com" {:title "CodeMeSelf" :points 1 :date (DateTime.)}}))
+(def data  (atom {"http://codemeself.blogspot.com" {:title "CodeMeSelf" :points 1 :date (DateTime.)}}))
 
 (def formatter
      (.toPrinter (doto (org.joda.time.format.PeriodFormatterBuilder.)
@@ -89,15 +89,15 @@
     (empty? title)     "/new/?msg=Invalid Title"
     (@data url)        "/new/?msg=Link already submitted"
     :else
-    (dosync
-     (alter data assoc url {:title title :date (DateTime.) :points 1})
-     "/"))))
+    (do
+      (swap! data assoc url {:title title :date (DateTime.) :points 1})
+      "/"))))
 
 (defn rate [url mfn]
   (println "Rating " url)
-  (dosync
-   (when (@data url)
-     (alter data update-in [url :points] mfn)))
+  (swap! data (fn [old-data]
+                (when (old-data url)
+                  (update-in old-data [url :points] mfn))))
   (redirect "/"))
 
 (defroutes public-routes
