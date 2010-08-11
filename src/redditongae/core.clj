@@ -29,7 +29,7 @@
     (str retr)))
 
 (defn render-links [keyfn cmp]
-  (for [link (sort-by keyfn cmp @data)]
+  (for [link (take 10 (sort-by keyfn cmp @data))]
     (let [[url {:keys [title points date]}] link]
       [:li
        (link-to url title)
