@@ -13,7 +13,8 @@
            (org.joda.time DateTime Duration Period)))
 
 ;; TODO replace it with data store use
-(def data  (atom {"http://codemeself.blogspot.com" {:title "CodeMeSelf" :points 1 :date (DateTime.)}}))
+(def data  (atom {"http://groups.google.com/group/amsterdam-clojurians"
+                  {:title "Amsterdam Clojurians" :points 1 :date (DateTime.)}}))
 
 (def formatter
      (.toPrinter (doto (org.joda.time.format.PeriodFormatterBuilder.)
@@ -31,28 +32,29 @@
 (defn render-links [keyfn cmp]
   (for [link (take 10 (sort-by keyfn cmp @data))]
     (let [[url {:keys [title points date]}] link]
-      [:li
+      [:li#linkinfo
        (link-to url title)
-       [:span (format " Posted %s ago. %d %s " (pprint date) points "points")]
-       (form-to [:post "/up/"]
-                [:input {:type "hidden" :name "url" :value url}]
-                (submit-button "Up"))
-       (form-to [:post "/down/"]
-                [:input {:type "hidden" :name "url" :value url}]
-                (submit-button "Down"))])))
+       [:span (format " Posted %s ago. %d %s " (pprint date) points "points")
+        (form-to [:post "/up/"]
+                 [:input {:type "hidden" :name "url" :value url}]
+                 (submit-button "up"))
+        (form-to [:post "/down/"]
+                 [:input {:type "hidden" :name "url" :value url}]
+                 (submit-button "down"))]])))
 
 (defn top-bar []
   (let [ui (users/user-info)]
     [:div#topbar
-     [:h3 "Current User"]
-     (if-let [user (:user ui)]
-       [:span "Logged in as " (.getEmail user) " " (link-to (.createLogoutURL (:user-service ui) "/") "Logout")]
-       [:span "Not logged in " (link-to (.createLoginURL (:user-service ui) "/") "Login")])
-     [:h3 "Navigation"]
-     [:a {:href "/"} "Refresh"] [:a {:href "/new/"} "Add link"]]))
+     [:span#user
+      (if-let [user (:user ui)]
+        [:span "Logged in as " [:b (.getNickname user)] " "
+         (link-to (.createLogoutURL (:user-service ui) "/") "Logout")]
+        (link-to (.createLoginURL (:user-service ui) "/") "Login"))]
+     [:span#nav "Navigation" [:a {:href "/"} "Refresh"] [:a {:href "/new/"} "Add link"]]]))
 
 (defn reddit-new-link [msg]
   (html
+   (doctype :xhtml-strict)
    [:head
     [:title "Reddit.Clojure.GAE - Submit to our authority"]]
    [:body
@@ -67,6 +69,7 @@
 
 (defn reddit-home []
   (html
+   (doctype :xhtml-strict)
    [:head
     [:title "Reddit.Clojure.GAE"]
     (include-css "/css/main.css")]
