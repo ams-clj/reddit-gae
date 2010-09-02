@@ -1,10 +1,23 @@
 # reddit-gae
 
-FIXME: write description
+An in-fieri Reddit clone written in Clojure that runs on Google AppEngine
 
 ## Usage
 
-FIXME: write
+To run reddit-gae in GAE dev server you need to:
+$ lein deps && lein compile
+$ dev_appserver.sh war/
+
+Assuming you already have appengine in your path.
+
+If you want a really nice interactive development you will need:
+$ lein swank
+M-x slime-connect
+C-c C-k in redditongae.core
+in slime repl:
+(require 'local-dev)
+(local-dev/init-app-engine)
+(local-dev/start-server (var example))
 
 ## Installation
 
